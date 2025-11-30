@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Anomaly Details{% endblock %}
+{% block content %}
+<h2>Anomaly Alert: {{ anomaly.username }}</h2>
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <p><strong>Type:</strong> {{ anomaly.anomaly_type }}</p>
+                <p><strong>Score:</strong> {{ (anomaly.anomaly_score * 100)|round(1) }}%</p>
+                <p><strong>Detected:</strong> {{ anomaly.detected_at }}</p>
+                <h5 class="mt-4">Details</h5>
+                <pre class="bg-light p-3">{{ anomaly.details|tojson(indent=2) }}</pre>
+                <form method="POST" action="{{ url_for('ml.update_anomaly', anomaly_id=anomaly._id) }}">
+                    <select name="status" class="form-select mb-2">
+                        <option value="investigating">Investigating</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="false_positive">False Positive</option>
+                    </select>
+                    <textarea name="notes" class="form-control mb-2" placeholder="Notes"></textarea>
+                    <button class="btn btn-primary">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">User Activity</div>
+            <div class="card-body">
+                {% for log in recent_activity[:10] %}
+                <div class="mb-2 small">
+                    <strong>{{ log.action }}</strong><br>
+                    <small>{{ log.timestamp.strftime('%H:%M:%S') }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

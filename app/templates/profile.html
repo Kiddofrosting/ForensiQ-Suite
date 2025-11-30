@@ -1,0 +1,463 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-person-circle"></i> User Profile</h2>
+    <div>
+        <a href="{{ url_for('auth.change_password') }}" class="btn btn-warning">
+            <i class="bi bi-key"></i> Change Password
+        </a>
+        <a href="{{ url_for('main.settings') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <!-- Profile Avatar -->
+                <div class="position-relative d-inline-block mb-3">
+                    <div class="rounded-circle bg-gradient d-inline-flex align-items-center justify-content-center"
+                         style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="bi bi-person-fill text-white" style="font-size: 4rem;"></i>
+                    </div>
+                    <span class="position-absolute bottom-0 end-0 translate-middle badge rounded-pill
+                                 bg-{{ 'success' if user.status == 'active' else 'danger' }}">
+                        {{ user.status }}
+                    </span>
+                </div>
+
+                <h4 class="mb-1">{{ user.full_name }}</h4>
+                <p class="text-muted mb-2">@{{ user.username }}</p>
+                <p class="mb-3">
+                    <span class="badge bg-primary badge-role">
+                        <i class="bi bi-shield-check"></i> {{ user.role|replace('_', ' ')|title }}
+                    </span>
+                </p>
+
+                <!-- Quick Stats -->
+                <div class="row g-2 mt-3">
+                    <div class="col-4">
+                        <div class="p-2 bg-light rounded">
+                            <h5 class="mb-0 text-primary">{{ stats.cases_created }}</h5>
+                            <small class="text-muted">Cases</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 bg-light rounded">
+                            <h5 class="mb-0 text-success">{{ stats.evidence_uploaded }}</h5>
+                            <small class="text-muted">Evidence</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 bg-light rounded">
+                            <h5 class="mb-0 text-info">{{ stats.osint_queries }}</h5>
+                            <small class="text-muted">OSINT</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Info -->
+                <div class="mt-4 pt-3 border-top text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar-check"></i> Member Since
+                        </small>
+                        <small class="fw-bold">
+                            {{ user.created_at.strftime('%b %d, %Y') if user.created_at else 'N/A' }}
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history"></i> Last Login
+                        </small>
+                        <small class="fw-bold">
+                            {{ user.last_login.strftime('%b %d, %Y') if user.last_login else 'Never' }}
+                        </small>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-lock"></i> MFA Status
+                        </small>
+                        <small>
+                            {% if user.mfa_enabled %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Enabled
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-exclamation-triangle"></i> Disabled
+                                </span>
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Status Card -->
+        <div class="card shadow-sm mt-3">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-shield-check"></i> Security Status</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <small>Password Last Changed:
+                            <strong>{{ (user.updated_at.strftime('%Y-%m-%d') if user.updated_at else 'N/A') }}</strong>
+                        </small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-{{ 'check-circle-fill text-success' if user.mfa_enabled else 'x-circle-fill text-warning' }}"></i>
+                        <small>Two-Factor Authentication:
+                            <strong>{{ 'Enabled' if user.mfa_enabled else 'Disabled' }}</strong>
+                        </small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        <small>Account Status:
+                            <strong class="text-{{ 'success' if user.status == 'active' else 'danger' }}">
+                                {{ user.status|title }}
+                            </strong>
+                        </small>
+                    </li>
+                    <li>
+                        <i class="bi bi-info-circle-fill text-info"></i>
+                        <small>Login Attempts:
+                            <strong>{{ user.failed_login_attempts or 0 }}</strong>
+                        </small>
+                    </li>
+                </ul>
+
+                {% if not user.mfa_enabled %}
+                <div class="alert alert-warning mt-3 mb-0 small">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Recommendation:</strong> Enable MFA for enhanced security
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Profile Information -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong class="text-muted">Full Name</strong>
+                    </div>
+                    <div class="col-md-9">
+                        {{ user.full_name }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong class="text-muted">Username</strong>
+                    </div>
+                    <div class="col-md-9">
+                        <code>{{ user.username }}</code>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong class="text-muted">Email Address</strong>
+                    </div>
+                    <div class="col-md-9">
+                        <i class="bi bi-envelope"></i> {{ user.email }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong class="text-muted">Role</strong>
+                    </div>
+                    <div class="col-md-9">
+                        <span class="badge bg-primary">
+                            <i class="bi bi-person-badge"></i> {{ user.role|replace('_', ' ')|title }}
+                        </span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <strong class="text-muted">User ID</strong>
+                    </div>
+                    <div class="col-md-9">
+                        <code class="small">{{ user._id }}</code>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong class="text-muted">Created By</strong>
+                    </div>
+                    <div class="col-md-9">
+                        {{ user.created_by if user.created_by else 'Self-Registered' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Statistics -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Activity Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-folder-fill fs-1 text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="mb-0">{{ stats.cases_created }}</h4>
+                                <small class="text-muted">Cases Created</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-file-earmark-lock-fill fs-1 text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="mb-0">{{ stats.evidence_uploaded }}</h4>
+                                <small class="text-muted">Evidence Files Uploaded</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-search fs-1 text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="mb-0">{{ stats.osint_queries }}</h4>
+                                <small class="text-muted">OSINT Queries Performed</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-box-arrow-in-right fs-1 text-info"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="mb-0">{{ stats.login_count }}</h4>
+                                <small class="text-muted">Total Logins</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Timeline -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h5>
+                <a href="{{ url_for('logs.user_logs', user_id=user._id) }}" class="btn btn-sm btn-outline-primary">
+                    View All
+                </a>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                {% if recent_activity %}
+                <div class="timeline">
+                    {% for log in recent_activity[:15] %}
+                    <div class="timeline-item mb-3 pb-3 {{ 'border-bottom' if not loop.last else '' }}">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <div class="rounded-circle bg-{{
+                                    'success' if 'created' in log.action or 'uploaded' in log.action
+                                    else 'info' if 'viewed' in log.action
+                                    else 'warning' if 'updated' in log.action
+                                    else 'primary'
+                                }} bg-opacity-25 p-2">
+                                    <i class="bi bi-{{
+                                        'plus-circle' if 'created' in log.action
+                                        else 'upload' if 'uploaded' in log.action
+                                        else 'eye' if 'viewed' in log.action
+                                        else 'pencil' if 'updated' in log.action
+                                        else 'box-arrow-in-right' if log.action == 'login'
+                                        else 'box-arrow-right' if log.action == 'logout'
+                                        else 'circle-fill'
+                                    }} text-{{
+                                        'success' if 'created' in log.action or 'uploaded' in log.action
+                                        else 'info' if 'viewed' in log.action
+                                        else 'warning' if 'updated' in log.action
+                                        else 'primary'
+                                    }}"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="d-block">{{ log.action|replace('_', ' ')|title }}</strong>
+                                        <small class="text-muted">
+                                            {% if log.metadata %}
+                                                {% if log.metadata.case_number %}
+                                                    Case: {{ log.metadata.case_number }}
+                                                {% elif log.metadata.file_name %}
+                                                    File: {{ log.metadata.file_name }}
+                                                {% elif log.metadata.query_type %}
+                                                    Query: {{ log.metadata.query_type }}
+                                                {% endif %}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    <small class="text-muted">
+                                        {{ log.timestamp.strftime('%b %d, %H:%M') if log.timestamp else 'N/A' }}
+                                    </small>
+                                </div>
+                                {% if log.ip_address %}
+                                <small class="text-muted d-block mt-1">
+                                    <i class="bi bi-geo-alt"></i> <code>{{ log.ip_address }}</code>
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-clock-history fs-1"></i>
+                    <p class="mt-2">No recent activity</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role Permissions Modal -->
+<div class="modal fade" id="permissionsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-shield-lock"></i> Role Permissions
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6 class="text-primary">{{ user.role|replace('_', ' ')|title }} Permissions:</h6>
+                <ul class="list-group list-group-flush">
+                    {% if user.role == 'admin' %}
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Full system access</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> User management</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> System configuration</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> View all cases and evidence</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Anomaly detection management</li>
+                    {% elif user.role == 'case_manager' %}
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Create and manage cases</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Assign cases to investigators</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> View all evidence</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Export case reports</li>
+                    {% elif user.role == 'investigator' %}
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Create cases</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Upload and analyze evidence</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Perform basic OSINT queries</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Add case notes</li>
+                    {% elif user.role == 'osint_analyst' %}
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Advanced OSINT capabilities</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Domain and network reconnaissance</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Email and file intelligence</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> View assigned cases</li>
+                    {% elif user.role == 'legal_reviewer' %}
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> View finalized evidence</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Review chain of custody</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Access case timelines</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle-fill text-success"></i> Download legal bundles</li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Button (Floating) -->
+<button class="btn btn-primary position-fixed bottom-0 end-0 m-4 rounded-circle shadow-lg"
+        style="width: 60px; height: 60px; z-index: 1000;"
+        data-bs-toggle="modal"
+        data-bs-target="#permissionsModal"
+        title="View Permissions">
+    <i class="bi bi-shield-lock fs-5"></i>
+</button>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .badge-role {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .timeline-item:last-child {
+        border-bottom: none !important;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    }
+
+    @media print {
+        .btn, .floating-btn {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Copy User ID to clipboard
+    function copyUserId() {
+        const userId = '{{ user._id }}';
+        navigator.clipboard.writeText(userId).then(() => {
+            alert('User ID copied to clipboard!');
+        });
+    }
+
+    // Export profile data
+    function exportProfile() {
+        const profileData = {
+            username: '{{ user.username }}',
+            email: '{{ user.email }}',
+            role: '{{ user.role }}',
+            stats: {
+                cases: {{ stats.cases_created }},
+                evidence: {{ stats.evidence_uploaded }},
+                osint: {{ stats.osint_queries }},
+                logins: {{ stats.login_count }}
+            }
+        };
+
+        const dataStr = JSON.stringify(profileData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+        const exportFileDefaultName = 'profile_{{ user.username }}.json';
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    }
+</script>
+{% endblock %}

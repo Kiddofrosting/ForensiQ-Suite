@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}OSINT Query{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-search"></i> Perform OSINT Query</h5>
+                <small>Case: {{ case.case_number }} - {{ case.title }}</small>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Query Type</label>
+                        <select class="form-select" name="query_type" id="queryType" required>
+                            <option value="whois">WHOIS Lookup</option>
+                            <option value="dns">DNS Records</option>
+                            <option value="ip">IP Intelligence</option>
+                            <option value="email">Email Intelligence</option>
+                            <option value="url">URL Analysis</option>
+                            <option value="file">File Hash Lookup</option>
+                            <option value="username">Username Search</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Query Term</label>
+                        <input type="text" class="form-control" name="query_term"
+                               id="queryTerm" placeholder="e.g., example.com" required>
+                        <small class="form-text text-muted" id="queryHelp"></small>
+                    </div>
+                    <button type="submit" class="btn btn-info">Execute Query</button>
+                    <a href="{{ url_for('cases.view_case', case_id=case._id) }}" class="btn btn-outline-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('queryType').addEventListener('change', function() {
+    const help = {
+        'whois': 'Enter domain name (e.g., example.com)',
+        'dns': 'Enter domain name',
+        'ip': 'Enter IP address (e.g., 8.8.8.8)',
+        'email': 'Enter email address',
+        'url': 'Enter full URL (e.g., https://example.com)',
+        'file': 'Enter file hash (MD5, SHA1, or SHA256)',
+        'username': 'Enter username to search'
+    };
+    document.getElementById('queryHelp').textContent = help[this.value];
+});
+</script>
+{% endblock %}

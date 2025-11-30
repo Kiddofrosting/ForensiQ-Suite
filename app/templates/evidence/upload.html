@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Evidence - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-upload"></i> Upload Evidence</h5>
+                <small>Case: {{ case.case_number }} - {{ case.title }}</small>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('evidence.upload_evidence', case_id=case._id) }}"
+                      enctype="multipart/form-data" id="uploadForm">
+
+                    <div class="mb-4">
+                        <label class="form-label">Select File <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" name="file" id="fileInput" required>
+                        <small class="form-text text-muted">
+                            Max size: 500MB. Supported: documents, images, archives, logs, network captures
+                        </small>
+                        <div class="mt-2" id="fileInfo"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="4"
+                                  placeholder="Describe the evidence and its source..."></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tags (comma-separated)</label>
+                            <input type="text" class="form-control" name="tags"
+                                   placeholder="e.g., email, malware, screenshot">
+                            <small class="form-text text-muted">Help categorize this evidence</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Retention Period (days)</label>
+                            <input type="number" class="form-control" name="retention_days" value="365" min="1">
+                            <small class="form-text text-muted">How long to keep this evidence</small>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> <strong>Security Notice:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>File will be automatically encrypted upon upload</li>
+                            <li>SHA-256, MD5, and SHA1 hashes will be generated</li>
+                            <li>Chain of custody will be automatically tracked</li>
+                            <li>Metadata will be extracted and stored</li>
+                        </ul>
+                    </div>
+
+                    <div class="progress mb-3" id="progressBar" style="display: none;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('cases.view_case', case_id=case._id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success" id="submitBtn">
+                            <i class="bi bi-upload"></i> Upload Evidence
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Guidelines -->
+        <div class="card mt-3 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Evidence Handling Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Ensure evidence is collected following proper forensic procedures</li>
+                    <li>Document the source and context of the evidence</li>
+                    <li>Do not modify original files before upload</li>
+                    <li>Verify file integrity after upload using hash values</li>
+                    <li>Maintain proper chain of custody documentation</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadForm = document.getElementById('uploadForm');
+    const progressBar = document.getElementById('progressBar');
+    const submitBtn = document.getElementById('submitBtn');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+            fileInfo.innerHTML = `
+                <div class="alert alert-secondary">
+                    <strong>Selected:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${fileSizeMB} MB<br>
+                    <strong>Type:</strong> ${file.type || 'Unknown'}
+                </div>
+            `;
+
+            if (file.size > 500 * 1024 * 1024) {
+                fileInfo.innerHTML += '<div class="alert alert-danger">File exceeds 500MB limit!</div>';
+                submitBtn.disabled = true;
+            } else {
+                submitBtn.disabled = false;
+            }
+        }
+    });
+
+    uploadForm.addEventListener('submit', function(e) {
+        progressBar.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
+
+        // Simulate progress (in real implementation, use XMLHttpRequest for actual progress)
+        let progress = 0;
+        const interval = setInterval(function() {
+            progress += 10;
+            progressBar.querySelector('.progress-bar').style.width = progress + '%';
+            if (progress >= 90) {
+                clearInterval(interval);
+            }
+        }, 200);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Help{% endblock %}
+{% block content %}
+<h2><i class="bi bi-question-circle"></i> Help & Documentation</h2>
+<div class="accordion">
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#help1">
+            Getting Started
+        </button></h2>
+        <div class="accordion-collapse collapse show" id="help1"><div class="accordion-body">
+            ForensIQ Suite is a digital evidence management system...
+        </div></div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#help2">
+            Role Permissions
+        </button></h2>
+        <div class="accordion-collapse collapse" id="help2"><div class="accordion-body">
+            {% for role, perms in role_permissions.items() %}
+            <h6>{{ role|title }}</h6>
+            <ul>{% for perm in perms %}<li>{{ perm }}</li>{% endfor %}</ul>
+            {% endfor %}
+        </div></div>
+    </div>
+</div>
+{% endblock %}

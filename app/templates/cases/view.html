@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}{{ case.case_number }} - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>
+            <i class="bi bi-folder-open"></i> {{ case.case_number }}
+            {% if case.priority == 'critical' %}
+                <span class="badge bg-danger">Critical</span>
+            {% elif case.priority == 'high' %}
+                <span class="badge bg-warning">High</span>
+            {% endif %}
+        </h2>
+        <p class="text-muted mb-0">{{ case.title }}</p>
+    </div>
+    <div>
+        {% if session.role in ['admin', 'case_manager'] %}
+        <a href="{{ url_for('cases.edit_case', case_id=case._id) }}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        {% endif %}
+        {% if session.role in ['admin', 'case_manager', 'investigator'] %}
+        <a href="{{ url_for('evidence.upload_evidence', case_id=case._id) }}" class="btn btn-success">
+            <i class="bi bi-upload"></i> Upload Evidence
+        </a>
+        {% endif %}
+        {% if session.role in ['admin', 'case_manager', 'investigator', 'osint_analyst'] %}
+        <a href="{{ url_for('osint.perform_query', case_id=case._id) }}" class="btn btn-info">
+            <i class="bi bi-search"></i> OSINT Query
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Case Details -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Case Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Status:</strong></div>
+                    <div class="col-md-9">
+                        {% if case.status == 'open' %}
+                            <span class="badge bg-primary">Open</span>
+                        {% elif case.status == 'in_progress' %}
+                            <span class="badge bg-warning">In Progress</span>
+                        {% elif case.status == 'closed' %}
+                            <span class="badge bg-success">Closed</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Archived</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Type:</strong></div>
+                    <div class="col-md-9"><span class="badge bg-secondary">{{ case.case_type|replace('_', ' ')|title }}</span></div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Priority:</strong></div>
+                    <div class="col-md-9">
+                        {% if case.priority == 'critical' %}
+                            <span class="badge bg-danger">Critical</span>
+                        {% elif case.priority == 'high' %}
+                            <span class="badge bg-warning">High</span>
+                        {% elif case.priority == 'medium' %}
+                            <span class="badge bg-info">Medium</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Description:</strong></div>
+                    <div class="col-md-9">{{ case.description }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Tags:</strong></div>
+                    <div class="col-md-9">
+                        {% if case.tags %}
+                            {% for tag in case.tags %}
+                                <span class="badge bg-light text-dark">{{ tag }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">No tags</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Created:</strong></div>
+                    <div class="col-md-9">{{ case.created_at.strftime('%Y-%m-%d %H:%M:%S') if case.created_at else 'N/A' }}</div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3"><strong>Last Updated:</strong></div>
+                    <div class="col-md-9">{{ case.updated_at.strftime('%Y-%m-%d %H:%M:%S') if case.updated_at else 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evidence -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-lock"></i> Evidence ({{ evidence_list|length }})</h5>
+                {% if session.role in ['admin', 'case_manager', 'investigator'] %}
+                <a href="{{ url_for('evidence.upload_evidence', case_id=case._id) }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-plus"></i> Add
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if evidence_list %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Hash (SHA-256)</th>
+                                <th>Uploaded</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for evidence in evidence_list %}
+                            <tr>
+                                <td>
+                                    <i class="bi bi-file-earmark"></i>
+                                    <a href="{{ url_for('evidence.view_evidence', evidence_id=evidence._id) }}">
+                                        {{ evidence.file_name }}
+                                    </a>
+                                </td>
+                                <td><small>{{ evidence.file_type }}</small></td>
+                                <td><small>{{ (evidence.file_size / 1024)|round(2) }} KB</small></td>
+                                <td><code class="small">{{ evidence.sha256_hash[:16] }}...</code></td>
+                                <td><small>{{ evidence.uploaded_at.strftime('%Y-%m-%d') if evidence.uploaded_at else 'N/A' }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('evidence.view_evidence', evidence_id=evidence._id) }}"
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No evidence uploaded yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- OSINT Queries -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-search"></i> OSINT Queries ({{ osint_queries|length }})</h5>
+                {% if session.role in ['admin', 'case_manager', 'investigator', 'osint_analyst'] %}
+                <a href="{{ url_for('osint.perform_query', case_id=case._id) }}" class="btn btn-sm btn-info">
+                    <i class="bi bi-plus"></i> New Query
+                </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if osint_queries %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Query Term</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for query in osint_queries %}
+                            <tr>
+                                <td><span class="badge bg-info">{{ query.query_type }}</span></td>
+                                <td>{{ query.query_term }}</td>
+                                <td>
+                                    {% if query.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif query.status == 'failed' %}
+                                        <span class="badge bg-danger">Failed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ query.performed_at.strftime('%Y-%m-%d %H:%M') if query.performed_at else 'N/A' }}</small></td>
+                                <td>
+                                    <a href="{{ url_for('osint.view_query', query_id=query._id) }}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-binoculars fs-1"></i>
+                    <p class="mt-2">No OSINT queries performed yet</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Case Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if case.notes %}
+                <div class="list-group list-group-flush mb-3">
+                    {% for note in case.notes %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <strong>{{ note.username }}</strong>
+                            <small>{{ note.added_at.strftime('%Y-%m-%d %H:%M') if note.added_at else 'N/A' }}</small>
+                        </div>
+                        <p class="mb-0 mt-2">{{ note.text }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('cases.add_note', case_id=case._id) }}">
+                    <div class="mb-2">
+                        <textarea class="form-control" name="note" rows="3"
+                                  placeholder="Add a note to this case..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Add Note
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Assigned Team -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-people"></i> Assigned Team</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Created By:</strong><br>
+                    <span class="badge bg-primary">{{ creator.full_name if creator else 'Unknown' }}</span>
+                </div>
+
+                {% if assigned_users %}
+                <strong>Assigned To:</strong>
+                <ul class="list-unstyled mt-2">
+                    {% for user in assigned_users %}
+                    <li class="mb-2">
+                        <i class="bi bi-person-fill"></i> {{ user.full_name }}
+                        <br><small class="text-muted">{{ user.role|replace('_', ' ')|title }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No users assigned</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h6>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                {% if timeline %}
+                {% for log in timeline %}
+                <div class="mb-3 pb-3 border-bottom">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-circle-fill text-primary me-2" style="font-size: 0.5rem; margin-top: 0.5rem;"></i>
+                        <div class="flex-grow-1">
+                            <strong>{{ log.username }}</strong>
+                            <small class="d-block text-muted">{{ log.action|replace('_', ' ')|title }}</small>
+                            <small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else 'N/A' }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted text-center">No activity yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

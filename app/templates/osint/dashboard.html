@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}OSINT Dashboard - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<h2><i class="bi bi-search"></i> OSINT Dashboard</h2>
+<p class="text-muted">Open-Source Intelligence Gathering & Reconnaissance</p>
+
+<!-- Statistics -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card primary">
+            <div class="card-body text-center">
+                <h3>{{ stats.total }}</h3>
+                <p class="mb-0">Total Queries</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body text-center">
+                <h3>{{ stats.user }}</h3>
+                <p class="mb-0">Your Queries</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body text-center">
+                <h3>{{ stats.by_type.get('whois', 0) }}</h3>
+                <p class="mb-0">WHOIS Lookups</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body text-center">
+                <h3>{{ stats.by_type.get('dns', 0) }}</h3>
+                <p class="mb-0">DNS Queries</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Query Types -->
+<div class="row g-4 mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-binoculars"></i> Available OSINT Tools</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="bi bi-globe fs-1 text-primary"></i>
+                                <h6 class="mt-2">WHOIS Lookup</h6>
+                                <p class="small text-muted">Domain registration info</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="bi bi-server fs-1 text-success"></i>
+                                <h6 class="mt-2">DNS Records</h6>
+                                <p class="small text-muted">A, MX, NS, TXT records</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="bi bi-hdd-network fs-1 text-warning"></i>
+                                <h6 class="mt-2">IP Intelligence</h6>
+                                <p class="small text-muted">IP info & reverse DNS</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <i class="bi bi-envelope fs-1 text-info"></i>
+                                <h6 class="mt-2">Email Intel</h6>
+                                <p class="small text-muted">Email validation & MX</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Queries -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Queries</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_queries %}
+        <div class="table-responsive">
+            <table class="table table-hover datatable">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Query Term</th>
+                        <th>Status</th>
+                        <th>Performed By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for query in recent_queries %}
+                    <tr>
+                        <td><span class="badge bg-info">{{ query.query_type|upper }}</span></td>
+                        <td><code>{{ query.query_term }}</code></td>
+                        <td>
+                            {% if query.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif query.status == 'failed' %}
+                                <span class="badge bg-danger">Failed</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ query.performed_by }}</td>
+                        <td><small>{{ query.performed_at.strftime('%Y-%m-%d %H:%M') if query.performed_at else 'N/A' }}</small></td>
+                        <td>
+                            <a href="{{ url_for('osint.view_query', query_id=query._id) }}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted">
+            <i class="bi bi-inbox fs-1"></i>
+            <p class="mt-2">No OSINT queries yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

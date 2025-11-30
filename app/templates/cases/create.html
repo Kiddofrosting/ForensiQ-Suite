@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Create Case - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-folder-plus"></i> Create New Case</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cases.create_case') }}">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Case Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="title" placeholder="Enter case title" required>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Case Type <span class="text-danger">*</span></label>
+                            <select class="form-select" name="case_type" required>
+                                <option value="cybercrime">Cybercrime</option>
+                                <option value="fraud">Fraud</option>
+                                <option value="internal">Internal Investigation</option>
+                                <option value="data_breach">Data Breach</option>
+                                <option value="malware">Malware Analysis</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="description" rows="5"
+                                  placeholder="Detailed description of the case..." required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Priority <span class="text-danger">*</span></label>
+                            <select class="form-select" name="priority" required>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Assign To</label>
+                            <select class="form-select" name="assigned_to" multiple size="5">
+                                {% for user in users %}
+                                <option value="{{ user._id }}">
+                                    {{ user.full_name }} ({{ user.role|replace('_', ' ')|title }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple users</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control" name="tags"
+                               placeholder="e.g., phishing, ransomware, insider">
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> A unique case number will be automatically generated upon creation.
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('cases.list_cases') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Create Case
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Guidelines -->
+        <div class="card mt-3 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Case Creation Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Provide a clear, concise title that describes the investigation</li>
+                    <li>Include all relevant details in the description</li>
+                    <li>Set appropriate priority based on urgency and impact</li>
+                    <li>Assign investigators with relevant expertise</li>
+                    <li>Use tags to categorize for easy searching</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

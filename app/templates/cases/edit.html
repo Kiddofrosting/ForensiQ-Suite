@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Case - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-pencil"></i> Edit Case: {{ case.case_number }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('cases.edit_case', case_id=case._id) }}">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Case Title</label>
+                            <input type="text" class="form-control" name="title" value="{{ case.title }}" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="open" {% if case.status == 'open' %}selected{% endif %}>Open</option>
+                                <option value="in_progress" {% if case.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="closed" {% if case.status == 'closed' %}selected{% endif %}>Closed</option>
+                                <option value="archived" {% if case.status == 'archived' %}selected{% endif %}>Archived</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="5" required>{{ case.description }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" name="priority" required>
+                                <option value="low" {% if case.priority == 'low' %}selected{% endif %}>Low</option>
+                                <option value="medium" {% if case.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                <option value="high" {% if case.priority == 'high' %}selected{% endif %}>High</option>
+                                <option value="critical" {% if case.priority == 'critical' %}selected{% endif %}>Critical</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Assign To</label>
+                            <select class="form-select" name="assigned_to" multiple size="5">
+                                {% for user in users %}
+                                <option value="{{ user._id }}" 
+                                        {% if user._id|string in case.assigned_to %}selected{% endif %}>
+                                    {{ user.full_name }} ({{ user.role|replace('_', ' ')|title }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('cases.view_case', case_id=case._id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle"></i> Update Case
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <div>
+        <span class="badge bg-primary">{{ user_role|upper }}</span>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    {% if user_role == 'admin' %}
+    <div class="col-md-3">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Users</h6>
+                        <h3 class="mb-0">{{ stats.total_users }}</h3>
+                        <small class="text-success"><i class="bi bi-arrow-up"></i> {{ stats.active_users }} active</small>
+                    </div>
+                    <i class="bi bi-people fs-1 text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Total Cases</h6>
+                        <h3 class="mb-0">{{ stats.total_cases }}</h3>
+                        <small class="text-muted">All time</small>
+                    </div>
+                    <i class="bi bi-folder fs-1 text-success opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Evidence Files</h6>
+                        <h3 class="mb-0">{{ stats.total_evidence }}</h3>
+                        <small class="text-muted">Encrypted & secure</small>
+                    </div>
+                    <i class="bi bi-file-earmark-lock fs-1 text-warning opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Open Anomalies</h6>
+                        <h3 class="mb-0">{{ stats.open_anomalies }}</h3>
+                        <small class="text-danger"><i class="bi bi-exclamation-triangle"></i> Needs review</small>
+                    </div>
+                    <i class="bi bi-shield-exclamation fs-1 text-danger opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif user_role == 'case_manager' %}
+    <div class="col-md-3">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">My Cases</h6>
+                        <h3 class="mb-0">{{ stats.my_cases }}</h3>
+                        <small class="text-muted">Assigned to you</small>
+                    </div>
+                    <i class="bi bi-folder-check fs-1 text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Open Cases</h6>
+                        <h3 class="mb-0">{{ stats.open_cases }}</h3>
+                        <small class="text-success">Active investigations</small>
+                    </div>
+                    <i class="bi bi-folder-plus fs-1 text-success opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">In Progress</h6>
+                        <h3 class="mb-0">{{ stats.in_progress_cases }}</h3>
+                        <small class="text-warning">Under review</small>
+                    </div>
+                    <i class="bi bi-hourglass-split fs-1 text-warning opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Anomalies</h6>
+                        <h3 class="mb-0">{{ stats.open_anomalies }}</h3>
+                        <small class="text-info">Pending review</small>
+                    </div>
+                    <i class="bi bi-cpu fs-1 text-info opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif user_role == 'investigator' %}
+    <div class="col-md-4">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">My Cases</h6>
+                        <h3 class="mb-0">{{ stats.my_cases }}</h3>
+                        <small class="text-primary">Active</small>
+                    </div>
+                    <i class="bi bi-briefcase fs-1 text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Evidence Uploaded</h6>
+                        <h3 class="mb-0">{{ stats.evidence_uploaded }}</h3>
+                        <small class="text-success">Files</small>
+                    </div>
+                    <i class="bi bi-upload fs-1 text-success opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">OSINT Queries</h6>
+                        <h3 class="mb-0">{{ stats.osint_queries }}</h3>
+                        <small class="text-warning">Total</small>
+                    </div>
+                    <i class="bi bi-search fs-1 text-warning opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif user_role == 'osint_analyst' %}
+    <div class="col-md-4">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Assigned Cases</h6>
+                        <h3 class="mb-0">{{ stats.my_cases }}</h3>
+                        <small class="text-primary">Active</small>
+                    </div>
+                    <i class="bi bi-folder2-open fs-1 text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">OSINT Queries</h6>
+                        <h3 class="mb-0">{{ stats.osint_queries }}</h3>
+                        <small class="text-success">All time</small>
+                    </div>
+                    <i class="bi bi-binoculars fs-1 text-success opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Today's Queries</h6>
+                        <h3 class="mb-0">{{ stats.queries_today }}</h3>
+                        <small class="text-warning">Last 24h</small>
+                    </div>
+                    <i class="bi bi-clock-history fs-1 text-warning opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif user_role == 'legal_reviewer' %}
+    <div class="col-md-6">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Finalized Cases</h6>
+                        <h3 class="mb-0">{{ stats.finalized_cases }}</h3>
+                        <small class="text-primary">Ready for review</small>
+                    </div>
+                    <i class="bi bi-check2-circle fs-1 text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-muted mb-2">Pending Review</h6>
+                        <h3 class="mb-0">{{ stats.pending_review }}</h3>
+                        <small class="text-warning">Evidence items</small>
+                    </div>
+                    <i class="bi bi-hourglass-bottom fs-1 text-warning opacity-25"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <!-- Recent Cases -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-folder"></i> Recent Cases</h5>
+                    <a href="{{ url_for('cases.list_cases') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_cases %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Case Number</th>
+                                <th>Title</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for case in recent_cases %}
+                            <tr onclick="window.location='{{ url_for('cases.view_case', case_id=case._id) }}'" style="cursor: pointer;">
+                                <td><strong>{{ case.case_number }}</strong></td>
+                                <td>{{ case.title[:40] }}{% if case.title|length > 40 %}...{% endif %}</td>
+                                <td>
+                                    {% if case.priority == 'critical' %}
+                                        <span class="badge bg-danger">Critical</span>
+                                    {% elif case.priority == 'high' %}
+                                        <span class="badge bg-warning">High</span>
+                                    {% elif case.priority == 'medium' %}
+                                        <span class="badge bg-info">Medium</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Low</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if case.status == 'open' %}
+                                        <span class="badge bg-primary">Open</span>
+                                    {% elif case.status == 'in_progress' %}
+                                        <span class="badge bg-warning">In Progress</span>
+                                    {% elif case.status == 'closed' %}
+                                        <span class="badge bg-success">Closed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Archived</span>
+                                    {% endif %}
+                                </td>
+                                <td><small>{{ case.created_at.strftime('%Y-%m-%d') if case.created_at else 'N/A' }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2">No cases found</p>
+                    {% if user_role in ['admin', 'case_manager', 'investigator'] %}
+                    <a href="{{ url_for('cases.create_case') }}" class="btn btn-primary">Create First Case</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-activity"></i> Recent Activity</h5>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                {% if recent_logs %}
+                <div class="timeline">
+                    {% for log in recent_logs[:10] %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                {% if log.action == 'login' %}
+                                    <i class="bi bi-box-arrow-in-right text-success"></i>
+                                {% elif log.action == 'logout' %}
+                                    <i class="bi bi-box-arrow-right text-danger"></i>
+                                {% elif log.action == 'case_created' %}
+                                    <i class="bi bi-folder-plus text-primary"></i>
+                                {% elif log.action == 'evidence_uploaded' %}
+                                    <i class="bi bi-upload text-info"></i>
+                                {% else %}
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 0.5rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <small class="text-muted d-block">
+                                    {{ log.timestamp.strftime('%H:%M:%S') if log.timestamp else 'Unknown' }}
+                                </small>
+                                <strong>{{ log.username }}</strong>
+                                <small class="d-block text-muted">{{ log.action.replace('_', ' ').title() }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-clock-history fs-1"></i>
+                    <p class="mt-2">No recent activity</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Only: System Health & Anomalies -->
+{% if user_role in ['admin', 'case_manager'] and recent_anomalies %}
+<div class="row g-4 mt-3">
+    <div class="col-12">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-shield-exclamation"></i> Recent Anomalies</h5>
+                    <a href="{{ url_for('ml.list_anomalies') }}" class="btn btn-sm btn-light">View All</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Score</th>
+                                <th>Detected</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for anomaly in recent_anomalies %}
+                            <tr>
+                                <td><strong>{{ anomaly.username }}</strong></td>
+                                <td><span class="badge bg-warning">{{ anomaly.anomaly_type }}</span></td>
+                                <td>
+                                    <span class="anomaly-score-{{ 'high' if anomaly.anomaly_score >= 0.8 else 'medium' if anomaly.anomaly_score >= 0.5 else 'low' }}">
+                                        {{ (anomaly.anomaly_score * 100)|round(1) }}%
+                                    </span>
+                                </td>
+                                <td><small>{{ anomaly.detected_at.strftime('%Y-%m-%d %H:%M') if anomaly.detected_at else 'N/A' }}</small></td>
+                                <td>
+                                    {% if anomaly.status == 'open' %}
+                                        <span class="badge bg-danger">Open</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ anomaly.status|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('ml.view_anomaly', anomaly_id=anomaly._id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if user_role == 'admin' and system_health %}
+<div class="row g-4 mt-3">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-heart-pulse"></i> System Health</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-database fs-1 text-success"></i>
+                            <h6 class="mt-2">Database</h6>
+                            <span class="badge bg-success">{{ system_health.database_status }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-journals fs-1 text-primary"></i>
+                            <h6 class="mt-2">Audit Logs</h6>
+                            <strong>{{ system_health.audit_logs_count }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-box-arrow-in-right fs-1 text-info"></i>
+                            <h6 class="mt-2">Logins (24h)</h6>
+                            <strong>{{ system_health.recent_logins }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                            <h6 class="mt-2">Failed Logins</h6>
+                            <strong>{{ system_health.failed_logins }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh dashboard every 5 minutes
+    setTimeout(function() {
+        location.reload();
+    }, 300000);
+</script>
+{% endblock %}

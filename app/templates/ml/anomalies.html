@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Anomalies{% endblock %}
+{% block content %}
+<h2><i class="bi bi-shield-exclamation"></i> Anomaly Alerts</h2>
+<div class="mb-3">
+    <a href="?status=open" class="btn btn-sm btn-danger">Open</a>
+    <a href="?status=investigating" class="btn btn-sm btn-warning">Investigating</a>
+    <a href="?status=resolved" class="btn btn-sm btn-success">Resolved</a>
+    {% if session.role == 'admin' %}
+    <form method="POST" action="{{ url_for('ml.run_detection') }}" style="display:inline;">
+        <button class="btn btn-sm btn-info">Run Detection</button>
+    </form>
+    {% endif %}
+</div>
+<table class="table datatable">
+    <thead><tr><th>User</th><th>Type</th><th>Score</th><th>Detected</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+        {% for anomaly in anomalies %}
+        <tr>
+            <td>{{ anomaly.username }}</td>
+            <td><span class="badge bg-warning">{{ anomaly.anomaly_type }}</span></td>
+            <td class="anomaly-score-{{ 'high' if anomaly.anomaly_score >= 0.8 else 'medium' }}">
+                {{ (anomaly.anomaly_score * 100)|round(1) }}%
+            </td>
+            <td>{{ anomaly.detected_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td><span class="badge bg-{{ 'danger' if anomaly.status == 'open' else 'secondary' }}">{{ anomaly.status }}</span></td>
+            <td><a href="{{ url_for('ml.view_anomaly', anomaly_id=anomaly._id) }}" class="btn btn-sm btn-info">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

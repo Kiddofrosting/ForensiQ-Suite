@@ -1,0 +1,762 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-gear"></i> Settings</h2>
+    <a href="{{ url_for('main.profile') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Profile
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Settings Navigation -->
+    <div class="col-lg-3">
+        <div class="card shadow-sm sticky-top" style="top: 100px;">
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <a href="#account" class="list-group-item list-group-item-action active" data-section="account">
+                        <i class="bi bi-person-circle"></i> Account
+                    </a>
+                    <a href="#security" class="list-group-item list-group-item-action" data-section="security">
+                        <i class="bi bi-shield-lock"></i> Security
+                    </a>
+                    <a href="#notifications" class="list-group-item list-group-item-action" data-section="notifications">
+                        <i class="bi bi-bell"></i> Notifications
+                    </a>
+                    <a href="#preferences" class="list-group-item list-group-item-action" data-section="preferences">
+                        <i class="bi bi-sliders"></i> Preferences
+                    </a>
+                    <a href="#privacy" class="list-group-item list-group-item-action" data-section="privacy">
+                        <i class="bi bi-eye-slash"></i> Privacy
+                    </a>
+                    <a href="#sessions" class="list-group-item list-group-item-action" data-section="sessions">
+                        <i class="bi bi-display"></i> Sessions
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Content -->
+    <div class="col-lg-9">
+        <!-- Account Settings -->
+        <div class="settings-section" id="account">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> Account Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form id="accountForm">
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Full Name</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="full_name"
+                                       value="{{ user.full_name }}" readonly>
+                                <small class="form-text text-muted">
+                                    Contact admin to change your name
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Username</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="username"
+                                       value="{{ user.username }}" readonly>
+                                <small class="form-text text-muted">
+                                    Username cannot be changed
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Email Address</label>
+                            <div class="col-sm-9">
+                                <input type="email" class="form-control" name="email"
+                                       value="{{ user.email }}" readonly>
+                                <small class="form-text text-muted">
+                                    Contact admin to update email
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-3 col-form-label">Role</label>
+                            <div class="col-sm-9">
+                                <span class="badge bg-primary">
+                                    {{ user.role|replace('_', ' ')|title }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <label class="col-sm-3 col-form-label">Account Status</label>
+                            <div class="col-sm-9">
+                                <span class="badge bg-{{ 'success' if user.status == 'active' else 'danger' }}">
+                                    {{ user.status|title }}
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h6 class="text-danger mb-3">Danger Zone</h6>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Account Deletion:</strong> Contact system administrator to request account deletion.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="settings-section d-none" id="security">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Security Settings</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Password -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-1">Password</h6>
+                            <small class="text-muted">
+                                Last changed: {{ user.updated_at.strftime('%B %d, %Y') if user.updated_at else 'Never' }}
+                            </small>
+                        </div>
+                        <a href="{{ url_for('auth.change_password') }}" class="btn btn-warning">
+                            <i class="bi bi-key"></i> Change Password
+                        </a>
+                    </div>
+
+                    <!-- Two-Factor Authentication -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-1">Two-Factor Authentication (MFA)</h6>
+                            <small class="text-muted">
+                                Add an extra layer of security to your account
+                            </small>
+                            <div class="mt-2">
+                                {% if user.mfa_enabled %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Enabled
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-exclamation-triangle"></i> Disabled
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            {% if user.mfa_enabled %}
+                            <button class="btn btn-outline-danger" onclick="alert('Contact admin to disable MFA')">
+                                <i class="bi bi-x-circle"></i> Disable
+                            </button>
+                            {% else %}
+                            <button class="btn btn-success" onclick="alert('Contact admin to enable MFA')">
+                                <i class="bi bi-shield-check"></i> Enable MFA
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Login History -->
+                    <div class="mb-3">
+                        <h6 class="mb-3">Recent Login Activity</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Time</th>
+                                        <th>IP Address</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if recent_activity %}
+                                        {% for log in recent_activity[:5] %}
+                                        {% if log.action in ['login', 'failed_login'] %}
+                                        <tr>
+                                            <td>
+                                                <small>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') if log.timestamp else 'N/A' }}</small>
+                                            </td>
+                                            <td><code>{{ log.ip_address }}</code></td>
+                                            <td>
+                                                {% if log.action == 'login' %}
+                                                <span class="badge bg-success">Success</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Failed</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No login history available</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Failed Login Attempts -->
+                    {% if user.failed_login_attempts > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Warning:</strong> {{ user.failed_login_attempts }} failed login attempt(s) detected.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="settings-section d-none" id="notifications">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-bell"></i> Notification Preferences</h5>
+                </div>
+                <div class="card-body">
+                    <form id="notificationForm">
+                        <h6 class="mb-3">Email Notifications</h6>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyNewCase" checked>
+                            <label class="form-check-label" for="notifyNewCase">
+                                <strong>New Case Assignments</strong>
+                                <br><small class="text-muted">Get notified when you're assigned to a new case</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyEvidence" checked>
+                            <label class="form-check-label" for="notifyEvidence">
+                                <strong>Evidence Updates</strong>
+                                <br><small class="text-muted">Notifications for evidence uploads on your cases</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyOsint">
+                            <label class="form-check-label" for="notifyOsint">
+                                <strong>OSINT Query Results</strong>
+                                <br><small class="text-muted">Get notified when OSINT queries complete</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyAnomaly" checked>
+                            <label class="form-check-label" for="notifyAnomaly">
+                                <strong>Security Alerts</strong>
+                                <br><small class="text-muted">Important security and anomaly notifications</small>
+                            </label>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="mb-3">System Notifications</h6>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyMaintenance" checked>
+                            <label class="form-check-label" for="notifyMaintenance">
+                                <strong>System Maintenance</strong>
+                                <br><small class="text-muted">Scheduled maintenance and downtime alerts</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="notifyUpdates">
+                            <label class="form-check-label" for="notifyUpdates">
+                                <strong>Feature Updates</strong>
+                                <br><small class="text-muted">New features and system updates</small>
+                            </label>
+                        </div>
+
+                        <button type="button" class="btn btn-primary mt-3" onclick="saveNotifications()">
+                            <i class="bi bi-check-circle"></i> Save Preferences
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Preferences -->
+        <div class="settings-section d-none" id="preferences">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-sliders"></i> User Preferences</h5>
+                </div>
+                <div class="card-body">
+                    <form id="preferencesForm">
+                        <h6 class="mb-3">Display Settings</h6>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">Theme</label>
+                            <div class="col-sm-8">
+                                <select class="form-select" id="themeSelect">
+                                    <option value="light" selected>Light</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="auto">Auto (System)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">Language</label>
+                            <div class="col-sm-8">
+                                <select class="form-select" id="languageSelect">
+                                    <option value="en" selected>English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">Timezone</label>
+                            <div class="col-sm-8">
+                                <select class="form-select" id="timezoneSelect">
+                                    <option value="UTC" selected>UTC (Coordinated Universal Time)</option>
+                                    <option value="EST">EST (Eastern Standard Time)</option>
+                                    <option value="PST">PST (Pacific Standard Time)</option>
+                                    <option value="GMT">GMT (Greenwich Mean Time)</option>
+                                    <option value="CET">CET (Central European Time)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <label class="col-sm-4 col-form-label">Date Format</label>
+                            <div class="col-sm-8">
+                                <select class="form-select" id="dateFormatSelect">
+                                    <option value="YYYY-MM-DD" selected>YYYY-MM-DD</option>
+                                    <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                    <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                    <option value="DD.MM.YYYY">DD.MM.YYYY</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="mb-3">Interface Options</h6>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="compactMode">
+                            <label class="form-check-label" for="compactMode">
+                                <strong>Compact Mode</strong>
+                                <br><small class="text-muted">Reduce spacing for more content on screen</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="showAvatars" checked>
+                            <label class="form-check-label" for="showAvatars">
+                                <strong>Show Avatars</strong>
+                                <br><small class="text-muted">Display user avatars throughout the interface</small>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="autoRefresh">
+                            <label class="form-check-label" for="autoRefresh">
+                                <strong>Auto-Refresh Dashboard</strong>
+                                <br><small class="text-muted">Automatically refresh dashboard every 5 minutes</small>
+                            </label>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h6 class="mb-3">Table Display</h6>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-form-label">Items Per Page</label>
+                            <div class="col-sm-8">
+                                <select class="form-select" id="itemsPerPage">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary mt-3" onclick="savePreferences()">
+                            <i class="bi bi-check-circle"></i> Save Preferences
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy Settings -->
+        <div class="settings-section d-none" id="privacy">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-eye-slash"></i> Privacy Settings</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="mb-3">Activity Visibility</h6>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showActivity" checked>
+                        <label class="form-check-label" for="showActivity">
+                            <strong>Show Activity Status</strong>
+                            <br><small class="text-muted">Let others see when you're online</small>
+                        </label>
+                    </div>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showLastSeen" checked>
+                        <label class="form-check-label" for="showLastSeen">
+                            <strong>Show Last Seen</strong>
+                            <br><small class="text-muted">Display your last login time to team members</small>
+                        </label>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="mb-3">Data & Privacy</h6>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div>
+                            <strong>Download Your Data</strong>
+                            <br><small class="text-muted">Request a copy of your personal data</small>
+                        </div>
+                        <button class="btn btn-outline-primary" onclick="requestDataDownload()">
+                            <i class="bi bi-download"></i> Request
+                        </button>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <strong>Audit Log Access</strong>
+                            <br><small class="text-muted">View your complete activity history</small>
+                        </div>
+                        <a href="{{ url_for('logs.user_logs', user_id=user._id) }}" class="btn btn-outline-primary">
+                            <i class="bi bi-journal-text"></i> View Logs
+                        </a>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Privacy Notice:</strong> All activities are logged for security and compliance purposes.
+                        Your data is encrypted and stored securely. Read our
+                        <a href="#" class="alert-link">Privacy Policy</a> for more details.
+                    </div>
+
+                    <button type="button" class="btn btn-primary" onclick="savePrivacy()">
+                        <i class="bi bi-check-circle"></i> Save Privacy Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="settings-section d-none" id="sessions">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-display"></i> Active Sessions</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Manage your active sessions across different devices and browsers.
+                    </p>
+
+                    <!-- Current Session -->
+                    <div class="border rounded p-3 mb-3 bg-light">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-2">
+                                    <i class="bi bi-laptop text-primary"></i> Current Session
+                                    <span class="badge bg-success ms-2">Active</span>
+                                </h6>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-geo-alt"></i> Location: Nairobi, Kenya
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-globe"></i> IP: {{ request.remote_addr }}
+                                </small>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-clock"></i> Last active: Just now
+                                </small>
+                            </div>
+                            <span class="badge bg-primary">This device</span>
+                        </div>
+                    </div>
+
+                    <!-- Other Sessions -->
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Note:</strong> Session management across multiple devices will be available in a future update.
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h6 class="mb-3">Session Security</h6>
+
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="trustDevice" checked>
+                        <label class="form-check-label" for="trustDevice">
+                            <strong>Trust This Device</strong>
+                            <br><small class="text-muted">Remember this device for 30 days</small>
+                        </label>
+                    </div>
+
+                    <button type="button" class="btn btn-danger mt-3" onclick="logoutAllSessions()">
+                        <i class="bi bi-power"></i> Logout All Other Sessions
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="card shadow-sm border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-question-circle"></i> Need Help?</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <i class="bi bi-book"></i> Check our <a href="{{ url_for('main.help_page') }}">documentation</a> for detailed guides
+                </p>
+                <p class="mb-0">
+                    <i class="bi bi-envelope"></i> Contact support at <a href="mailto:support@forensiq.local">support@forensiq.local</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-section {
+        scroll-margin-top: 100px;
+    }
+
+    .list-group-item.active {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+    .form-switch .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+
+    @media (max-width: 992px) {
+        .sticky-top {
+            position: relative !important;
+            top: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Section Navigation
+    document.querySelectorAll('[data-section]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Update active state
+            document.querySelectorAll('[data-section]').forEach(l => {
+                l.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            // Show selected section
+            const sectionId = this.getAttribute('data-section');
+            document.querySelectorAll('.settings-section').forEach(section => {
+                section.classList.add('d-none');
+            });
+            document.getElementById(sectionId).classList.remove('d-none');
+
+            // Scroll to top of content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    // Theme Selection
+    document.getElementById('themeSelect')?.addEventListener('change', function() {
+        const theme = this.value;
+        if (theme === 'auto') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.setAttribute('data-bs-theme', prefersDark ? 'dark' : 'light');
+        } else {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        }
+        localStorage.setItem('theme', theme);
+    });
+
+    // Load saved theme
+    window.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            document.getElementById('themeSelect').value = savedTheme;
+        }
+    });
+
+    // Save Notification Preferences
+    function saveNotifications() {
+        const notifications = {
+            newCase: document.getElementById('notifyNewCase').checked,
+            evidence: document.getElementById('notifyEvidence').checked,
+            osint: document.getElementById('notifyOsint').checked,
+            anomaly: document.getElementById('notifyAnomaly').checked,
+            maintenance: document.getElementById('notifyMaintenance').checked,
+            updates: document.getElementById('notifyUpdates').checked
+        };
+
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle"></i> Notification preferences saved successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.getElementById('notificationForm').prepend(alert);
+
+        setTimeout(() => alert.remove(), 3000);
+    }
+
+    // Save User Preferences
+    function savePreferences() {
+        const preferences = {
+            theme: document.getElementById('themeSelect').value,
+            language: document.getElementById('languageSelect').value,
+            timezone: document.getElementById('timezoneSelect').value,
+            dateFormat: document.getElementById('dateFormatSelect').value,
+            compactMode: document.getElementById('compactMode').checked,
+            showAvatars: document.getElementById('showAvatars').checked,
+            autoRefresh: document.getElementById('autoRefresh').checked,
+            itemsPerPage: document.getElementById('itemsPerPage').value
+        };
+
+        localStorage.setItem('preferences', JSON.stringify(preferences));
+
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show';
+        alert.innerHTML = `
+            <i class="bi bi-check-circle"></i> Preferences saved successfully!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.getElementById('preferencesForm').prepend(alert);
+
+        setTimeout(() => alert.remove(), 3000);
+    }
+
+    // Save Privacy Settings
+    function savePrivacy() {
+        const privacy = {
+            showActivity: document.getElementById('showActivity').checked,
+            showLastSeen: document.getElementById('showLastSeen').checked
+        };
+
+        localStorage.setItem('privacy', JSON.stringify(privacy));
+
+        alert('Privacy settings saved successfully!');
+    }
+
+    // Request Data Download
+    function requestDataDownload() {
+        if (confirm('Request a copy of your personal data? You will receive an email when your data is ready to download.')) {
+            alert('Data download request submitted. You will receive an email within 24-48 hours.');
+        }
+    }
+
+    // Logout All Sessions
+    function logoutAllSessions() {
+        if (confirm('This will log you out from all devices. Are you sure?')) {
+            window.location.href = "{{ url_for('auth.logout') }}";
+        }
+    }
+
+    // Load saved preferences
+    window.addEventListener('DOMContentLoaded', function() {
+        // Load notifications
+        const notifications = JSON.parse(localStorage.getItem('notifications') || '{}');
+        if (notifications.newCase !== undefined) {
+            document.getElementById('notifyNewCase').checked = notifications.newCase;
+        }
+        if (notifications.evidence !== undefined) {
+            document.getElementById('notifyEvidence').checked = notifications.evidence;
+        }
+        if (notifications.osint !== undefined) {
+            document.getElementById('notifyOsint').checked = notifications.osint;
+        }
+        if (notifications.anomaly !== undefined) {
+            document.getElementById('notifyAnomaly').checked = notifications.anomaly;
+        }
+        if (notifications.maintenance !== undefined) {
+            document.getElementById('notifyMaintenance').checked = notifications.maintenance;
+        }
+        if (notifications.updates !== undefined) {
+            document.getElementById('notifyUpdates').checked = notifications.updates;
+        }
+
+        // Load preferences
+        const preferences = JSON.parse(localStorage.getItem('preferences') || '{}');
+if (preferences.theme) {
+document.getElementById('themeSelect').value = preferences.theme;
+}
+if (preferences.language) {
+document.getElementById('languageSelect').value = preferences.language;
+}
+if (preferences.timezone) {
+document.getElementById('timezoneSelect').value = preferences.timezone;
+}
+if (preferences.dateFormat) {
+document.getElementById('dateFormatSelect').value = preferences.dateFormat;
+}
+if (preferences.compactMode !== undefined) {
+document.getElementById('compactMode').checked = preferences.compactMode;
+}
+if (preferences.showAvatars !== undefined) {
+document.getElementById('showAvatars').checked = preferences.showAvatars;
+}
+if (preferences.autoRefresh !== undefined) {
+document.getElementById('autoRefresh').checked = preferences.autoRefresh;
+}
+if (preferences.itemsPerPage) {
+document.getElementById('itemsPerPage').value = preferences.itemsPerPage;
+}
+// Load privacy
+    const privacy = JSON.parse(localStorage.getItem('privacy') || '{}');
+    if (privacy.showActivity !== undefined) {
+        document.getElementById('showActivity').checked = privacy.showActivity;
+    }
+    if (privacy.showLastSeen !== undefined) {
+        document.getElementById('showLastSeen').checked = privacy.showLastSeen;
+    }
+});
+
+// Handle hash navigation on page load
+if (window.location.hash) {
+    const sectionName = window.location.hash.substring(1);
+    const link = document.querySelector(`[data-section="${sectionName}"]`);
+    if (link) {
+        link.click();
+    }
+}
+</script>
+{% endblock %}

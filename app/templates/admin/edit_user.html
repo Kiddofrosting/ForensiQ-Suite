@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Edit User{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card"><div class="card-body">
+            <h5>Edit User: {{ user.username }}</h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" name="full_name" value="{{ user.full_name }}">
+                </div>
+                <div class="mb-3">
+                    <label>Email</label>
+                    <input type="email" class="form-control" name="email" value="{{ user.email }}">
+                </div>
+                <div class="mb-3">
+                    <label>Role</label>
+                    <select class="form-select" name="role">
+                        <option value="investigator" {% if user.role == 'investigator' %}selected{% endif %}>Investigator</option>
+                        <option value="osint_analyst" {% if user.role == 'osint_analyst' %}selected{% endif %}>OSINT Analyst</option>
+                        <option value="case_manager" {% if user.role == 'case_manager' %}selected{% endif %}>Case Manager</option>
+                        <option value="legal_reviewer" {% if user.role == 'legal_reviewer' %}selected{% endif %}>Legal Reviewer</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Status</label>
+                    <select class="form-select" name="status">
+                        <option value="active" {% if user.status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="suspended" {% if user.status == 'suspended' %}selected{% endif %}>Suspended</option>
+                        <option value="inactive" {% if user.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <button class="btn btn-warning">Update User</button>
+            </form>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

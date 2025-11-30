@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}System Settings{% endblock %}
+{% block content %}
+<h2><i class="bi bi-gear"></i> System Settings</h2>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card"><div class="card-body">
+            <form method="POST">
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" name="anomaly_detection" 
+                           {% if settings.anomaly_detection_enabled %}checked{% endif %}>
+                    <label class="form-check-label">Enable Anomaly Detection</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" name="auto_suspend"
+                           {% if settings.auto_suspend_on_anomaly %}checked{% endif %}>
+                    <label class="form-check-label">Auto-Suspend on Critical Anomalies</label>
+                </div>
+                <div class="mb-3">
+                    <label>Session Timeout (minutes)</label>
+                    <input type="number" class="form-control" name="session_timeout" 
+                           value="{{ settings.session_timeout_minutes or 120 }}">
+                </div>
+                <div class="mb-3">
+                    <label>Max Login Attempts</label>
+                    <input type="number" class="form-control" name="max_login_attempts" 
+                           value="{{ settings.max_login_attempts or 5 }}">
+                </div>
+                <button class="btn btn-primary">Save Settings</button>
+            </form>
+        </div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card"><div class="card-header">System Statistics</div><div class="card-body">
+            <p><strong>Users:</strong> {{ stats.total_users }}</p>
+            <p><strong>Cases:</strong> {{ stats.total_cases }}</p>
+            <p><strong>Evidence:</strong> {{ stats.total_evidence }}</p>
+            <p><strong>Audit Logs:</strong> {{ stats.total_logs }}</p>
+        </div></div>
+    </div>
+</div>
+{% endblock %}

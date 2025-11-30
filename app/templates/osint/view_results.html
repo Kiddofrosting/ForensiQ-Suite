@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}OSINT Results{% endblock %}
+{% block content %}
+<h2><i class="bi bi-search"></i> OSINT Query Results</h2>
+<div class="card shadow-sm">
+    <div class="card-header bg-info text-white">
+        <strong>{{ query.query_type|upper }}:</strong> {{ query.query_term }}
+    </div>
+    <div class="card-body">
+        <p><strong>Status:</strong>
+            {% if query.status == 'completed' %}<span class="badge bg-success">Completed</span>
+            {% elif query.status == 'failed' %}<span class="badge bg-danger">Failed</span>
+            {% else %}<span class="badge bg-warning">Pending</span>{% endif %}
+        </p>
+        <p><strong>Performed:</strong> {{ query.performed_at.strftime('%Y-%m-%d %H:%M:%S') if query.performed_at else 'N/A' }}</p>
+        <h5 class="mt-4">Results</h5>
+        <pre class="bg-light p-3" style="max-height: 600px; overflow-y: auto;">{{ query.results|tojson(indent=2) }}</pre>
+        <a href="{{ url_for('cases.view_case', case_id=query.case_id) }}" class="btn btn-primary mt-3">Back to Case</a>
+    </div>
+</div>
+{% endblock %}

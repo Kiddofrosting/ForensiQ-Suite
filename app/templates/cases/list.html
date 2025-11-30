@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Cases - ForensIQ Suite{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-folder"></i> Cases Management</h2>
+    {% if session.role in ['admin', 'case_manager', 'investigator'] %}
+    <a href="{{ url_for('cases.create_case') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> New Case
+    </a>
+    {% endif %}
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card primary">
+            <div class="card-body">
+                <h6 class="text-muted">Total Cases</h6>
+                <h3>{{ stats.total }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card success">
+            <div class="card-body">
+                <h6 class="text-muted">Open</h6>
+                <h3>{{ stats.open }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card warning">
+            <div class="card-body">
+                <h6 class="text-muted">In Progress</h6>
+                <h3>{{ stats.in_progress }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <h6 class="text-muted">Closed</h6>
+                <h3>{{ stats.closed }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form action="{{ url_for('cases.search_cases') }}" method="GET" class="row g-3">
+            <div class="col-md-10">
+                <input type="text" class="form-control" name="q" placeholder="Search cases by title, number, or description...">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cases Table -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        {% if cases %}
+        <div class="table-responsive">
+            <table class="table table-hover datatable">
+                <thead>
+                    <tr>
+                        <th>Case Number</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Evidence</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr class="case-priority-{{ case.priority }}">
+                        <td><strong>{{ case.case_number }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('cases.view_case', case_id=case._id) }}" class="text-decoration-none">
+                                {{ case.title[:50] }}{% if case.title|length > 50 %}...{% endif %}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-secondary">{{ case.case_type }}</span></td>
+                        <td>
+                            {% if case.priority == 'critical' %}
+                                <span class="badge bg-danger">Critical</span>
+                            {% elif case.priority == 'high' %}
+                                <span class="badge bg-warning text-dark">High</span>
+                            {% elif case.priority == 'medium' %}
+                                <span class="badge bg-info">Medium</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Low</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if case.status == 'open' %}
+                                <span class="badge bg-primary">Open</span>
+                            {% elif case.status == 'in_progress' %}
+                                <span class="badge bg-warning text-dark">In Progress</span>
+                            {% elif case.status == 'closed' %}
+                                <span class="badge bg-success">Closed</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Archived</span>
+                            {% endif %}
+                        </td>
+                        <td><small>{{ case.created_at.strftime('%Y-%m-%d') if case.created_at else 'N/A' }}</small></td>
+                        <td>
+                            <span class="badge bg-info">{{ case.evidence_ids|length if case.evidence_ids else 0 }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('cases.view_case', case_id=case._id) }}" class="btn btn-outline-primary" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if session.role in ['admin', 'case_manager'] %}
+                                <a href="{{ url_for('cases.edit_case', case_id=case._id) }}" class="btn btn-outline-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+            <p class="text-muted mt-3">No cases found</p>
+            {% if session.role in ['admin', 'case_manager', 'investigator'] %}
+            <a href="{{ url_for('cases.create_case') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create First Case
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

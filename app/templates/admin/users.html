@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<h2><i class="bi bi-people"></i> User Management</h2>
+<a href="{{ url_for('admin.create_user') }}" class="btn btn-primary mb-3">Create User</a>
+<table class="table datatable">
+    <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>MFA</th><th>Actions</th></tr></thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="badge bg-primary">{{ user.role }}</span></td>
+            <td><span class="badge bg-{{ 'success' if user.status == 'active' else 'danger' }}">{{ user.status }}</span></td>
+            <td>{{ 'Yes' if user.mfa_enabled else 'No' }}</td>
+            <td>
+                <a href="{{ url_for('admin.edit_user', user_id=user._id) }}" class="btn btn-sm btn-warning">Edit</a>
+                {% if user.status == 'active' %}
+                <form method="POST" action="{{ url_for('admin.suspend_user', user_id=user._id) }}" style="display:inline;">
+                    <button class="btn btn-sm btn-danger">Suspend</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('admin.activate_user', user_id=user._id) }}" style="display:inline;">
+                    <button class="btn btn-sm btn-success">Activate</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
